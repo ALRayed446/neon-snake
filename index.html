@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>Neon Snake</title>
+	<style>
+		:root {
+			color-scheme: dark;
+			--bg: #060b17;
+			--card: rgba(12, 20, 38, 0.95);
+			--panel: rgba(255, 255, 255, 0.05);
+			--border: rgba(255, 255, 255, 0.08);
+			--text: #e8eef8;
+			--muted: rgba(232, 238, 248, 0.72);
+			--accent: #62d6ff;
+			--accent2: #ff6cbf;
+			--accent3: #7ef0a5;
+			--danger: #ff5f7a;
+			--radius: 24px;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		html, body {
+			margin: 0;
+			min-height: 100%;
+			font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+			background: radial-gradient(circle at top left, rgba(98, 214, 255, 0.12), transparent 20%),
+				linear-gradient(180deg, #08121f 0%, #04070e 40%, #070a12 100%);
+			color: var(--text);
+		}
+
+		body {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 32px;
+		}
+
+		body::before {
+			content: '';
+			position: fixed;
+			inset: 0;
+			background: linear-gradient(140deg, rgba(255, 108, 191, 0.10), transparent 35%, rgba(98, 214, 255, 0.08));
+			pointer-events: none;
+		}
+
+		.app-shell {
+			width: min(1040px, 100%);
+			padding: 28px;
+			border-radius: 32px;
+			background: var(--card);
+			border: 1px solid var(--border);
+			box-shadow: 0 35px 120px rgba(0, 0, 0, 0.28);
+		}
+
+		.header {
+			display: flex;
+			justify-content: space-between;
+			gap: 18px;
+			align-items: flex-start;
+		}
+
+		.header h1 {
+			margin: 0;
+			font-size: clamp(2rem, 3vw, 3rem);
+			letter-spacing: -0.03em;
+		}
+
+		.header p {
+			margin: 10px 0 0;
+			color: var(--muted);
+			font-size: 1rem;
+			line-height: 1.6;
+		}
+
+		.mode-chip {
+			padding: 14px 18px;
+			border-radius: 18px;
+			background: rgba(255, 255, 255, 0.04);
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			text-align: right;
+		}
+
+		.mode-chip small {
+			display: block;
+			color: var(--muted);
+			font-size: 0.85rem;
+		}
+
+		.mode-chip strong {
+			display: block;
+			font-size: 1.4rem;
+			margin-top: 4px;
+		}
+
+		.game-panel {
+			display: grid;
+			grid-template-columns: 1.4fr 0.9fr;
+			gap: 22px;
+			margin-top: 26px;
+		}
+
+		.canvas-wrap {
+			position: relative;
+			padding: 24px;
+			background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+			border-radius: 30px;
+			border: 1px solid rgba(255, 255, 255, 0.06);
+			overflow: hidden;
+		}
+
+		.canvas-wrap::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: repeating-linear-gradient(0deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 1px, transparent 1px, transparent 20px),
+				repeating-linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 1px, transparent 1px, transparent 20px);
+			pointer-events: none;
+		}
+
+		canvas {
+			display: block;
+			width: 100%;
+			max-width: 460px;
+			height: auto;
+			border-radius: 22px;
+			border: 2px solid rgba(98, 214, 255, 0.22);
+			background: #02060d;
+			box-shadow: inset 0 0 50px rgba(98, 214, 255, 0.08), 0 25px 60px rgba(0, 0, 0, 0.4);
+		}
+
+		.sidebar {
+			display: flex;
+			flex-direction: column;
+			gap: 18px;
+		}
+
+		.status-grid {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 14px;
+		}
+
+		.chip {
+			padding: 18px 18px;
+			border-radius: 22px;
+			background: rgba(255, 255, 255, 0.04);
+			border: 1px solid rgba(255, 255, 255, 0.08);
+		}
+
+		.chip small {
+			display: block;
+			color: var(--muted);
+			font-size: 0.88rem;
+		}
+
+		.chip strong {
+			display: block;
+			font-size: 2rem;
+			margin-top: 9px;
+		}
+
+		.controls {
+			display: grid;
+			gap: 16px;
+		}
+
+		.label-group {
+			display: grid;
+			gap: 8px;
+		}
+
+		label {
+			font-size: 0.95rem;
+			color: var(--text);
+		}
+
+		select,
+		button {
+			width: 100%;
+			padding: 16px 18px;
+			border-radius: 16px;
+			border: 1px solid rgba(255,255,255,0.08);
+			background: rgba(255,255,255,0.05);
+			color: var(--text);
+			font: inherit;
+		}
+
+		button {
+			font-weight: 700;
+			background: linear-gradient(135deg, var(--accent), var(--accent2));
+			color: #07121b;
+			cursor: pointer;
+			box-shadow: 0 18px 30px rgba(98,214,255,0.16);
+			transition: transform 0.18s ease, filter 0.18s ease;
+		}
+
+		button:hover {
+			transform: translateY(-1px);
+			filter: brightness(1.05);
+		}
+
+		.hint {
+			padding: 18px;
+			border-radius: 20px;
+			background: rgba(255,255,255,0.04);
+			border: 1px solid rgba(255,255,255,0.07);
+			color: var(--muted);
+			line-height: 1.7;
+		}
+
+		footer {
+			margin-top: 24px;
+			text-align: center;
+			color: rgba(232, 238, 248, 0.62);
+			font-size: 0.94rem;
+		}
+
+		@media (max-width: 960px) {
+			.game-panel { grid-template-columns: 1fr; }
+		}
+		@media (max-width: 680px) {
+			body { padding: 16px; }
+			.app-shell { padding: 20px; }
+			.header { align-items: stretch; }
+			.mode-chip { text-align: left; }
+		}
+	</style>
+</head>
+<body>
+	<div class="app-shell">
+		<div class="header">
+			<div>
+				<h1>Neon Snake</h1>
+				<p>Launch a sleek snake experience with easy, normal, and hard modes for a polished, modern game.</p>
+			</div>
+			<div class="mode-chip">
+				<small>Difficulty</small>
+				<strong id="modeLabel">Normal</strong>
+			</div>
+		</div>
+
+		<div class="game-panel">
+			<div class="canvas-wrap">
+				<canvas id="game" width="420" height="420"></canvas>
+			</div>
+			<div class="sidebar">
+				<div class="status-grid">
+					<div class="chip">
+						<small>Score</small>
+						<strong id="score">0</strong>
+					</div>
+					<div class="chip">
+						<small>Best</small>
+						<strong id="bestScore">0</strong>
+					</div>
+				</div>
+
+				<div class="controls">
+					<div class="label-group">
+						<label for="difficulty">Choose difficulty</label>
+						<select id="difficulty">
+							<option value="easy">Easy</option>
+							<option value="normal" selected>Normal</option>
+							<option value="hard">Hard</option>
+						</select>
+					</div>
+					<button id="restart">Restart game</button>
+					<div class="hint">
+						<strong>How to play:</strong> Use arrow keys or WASD to steer. Hard mode adds wall collision and a faster pace.
+					</div>
+				</div>
+			</div>
+		</div>
+		<footer>Designed with neon contrast and clean shapes for an eye-catching game site.</footer>
+	</div>
+
+	<script>
+		const canvas = document.getElementById('game');
+		const ctx = canvas.getContext('2d');
+		const scoreEl = document.getElementById('score');
+		const bestScoreEl = document.getElementById('bestScore');
+		const restartBtn = document.getElementById('restart');
+		const difficultySelect = document.getElementById('difficulty');
+		const modeLabel = document.getElementById('modeLabel');
+
+		const grid = 20;
+		const cols = canvas.width / grid;
+		const rows = canvas.height / grid;
+
+		let snake = [];
+		let dir = { x: 1, y: 0 };
+		let food = null;
+		let score = 0;
+		let running = false;
+		let gameTimer = null;
+		let wallMode = false;
+		let tickInterval = 110;
+
+		const difficultySettings = {
+			easy: { interval: 150, wall: false, label: 'Easy' },
+			normal: { interval: 110, wall: false, label: 'Normal' },
+			hard: { interval: 75, wall: true, label: 'Hard' }
+		};
+
+		const storedBest = Number(localStorage.getItem('neonSnakeBestScore') || 0);
+		let bestScore = storedBest;
+		bestScoreEl.textContent = bestScore;
+
+		function applyDifficulty() {
+			const config = difficultySettings[difficultySelect.value] || difficultySettings.normal;
+			tickInterval = config.interval;
+			wallMode = config.wall;
+			modeLabel.textContent = config.label;
+			if (running) restartGame();
+		}
+
+		function randomPosition() {
+			return {
+				x: Math.floor(Math.random() * cols),
+				y: Math.floor(Math.random() * rows)
+			};
+		}
+
+		function placeFood() {
+			let position;
+			do {
+				position = randomPosition();
+			} while (snake.some(segment => segment.x === position.x && segment.y === position.y));
+			food = position;
+		}
+
+		function resetGameState() {
+			snake = [{ x: Math.floor(cols / 2), y: Math.floor(rows / 2) }];
+			dir = { x: 1, y: 0 };
+			placeFood();
+			score = 0;
+			scoreEl.textContent = score;
+			running = true;
+			clearInterval(gameTimer);
+			gameTimer = setInterval(gameTick, tickInterval);
+			draw();
+		}
+
+		function drawBackground() {
+			ctx.fillStyle = '#060b17';
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+			ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+			ctx.lineWidth = 1;
+			for (let x = 0; x <= canvas.width; x += grid) {
+				ctx.beginPath();
+				ctx.moveTo(x, 0);
+				ctx.lineTo(x, canvas.height);
+				ctx.stroke();
+			}
+			for (let y = 0; y <= canvas.height; y += grid) {
+				ctx.beginPath();
+				ctx.moveTo(0, y);
+				ctx.lineTo(canvas.width, y);
+				ctx.stroke();
+			}
+		}
+
+		function draw() {
+			drawBackground();
+
+			ctx.fillStyle = '#ff5fcf';
+			ctx.fillRect(food.x * grid + 4, food.y * grid + 4, grid - 8, grid - 8);
+
+			for (let index = 0; index < snake.length; index++) {
+				const segment = snake[index];
+				ctx.fillStyle = index === 0 ? '#ffffff' : '#7ef0a5';
+				ctx.shadowColor = index === 0 ? 'rgba(255,255,255,0.55)' : 'rgba(126,240,165,0.2)';
+				ctx.shadowBlur = index === 0 ? 12 : 6;
+				ctx.fillRect(segment.x * grid + 3, segment.y * grid + 3, grid - 6, grid - 6);
+			}
+			ctx.shadowBlur = 0;
+
+			if (!running) {
+				drawGameOver();
+			}
+		}
+
+		function drawGameOver() {
+			ctx.fillStyle = 'rgba(1, 11, 23, 0.72)';
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+			ctx.fillStyle = '#ffffff';
+			ctx.textAlign = 'center';
+			ctx.font = 'bold 30px Inter, system-ui, Arial';
+			ctx.fillText('Mission Failed', canvas.width / 2, canvas.height / 2 - 14);
+			ctx.font = '16px Inter, system-ui, Arial';
+			ctx.fillText(`Score ${score} — Best ${bestScore}`, canvas.width / 2, canvas.height / 2 + 18);
+			ctx.fillText('Restart to launch again.', canvas.width / 2, canvas.height / 2 + 46);
+		}
+
+		function updateScore() {
+			scoreEl.textContent = score;
+			if (score > bestScore) {
+				bestScore = score;
+				bestScoreEl.textContent = bestScore;
+				localStorage.setItem('neonSnakeBestScore', bestScore);
+			}
+		}
+
+		function gameTick() {
+			if (!running) return;
+
+			const nextX = snake[0].x + dir.x;
+			const nextY = snake[0].y + dir.y;
+			const head = { x: nextX, y: nextY };
+
+			if (wallMode) {
+				if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows) {
+					endGame();
+					return;
+				}
+			} else {
+				head.x = (head.x + cols) % cols;
+				head.y = (head.y + rows) % rows;
+			}
+
+			if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+				endGame();
+				return;
+			}
+
+			snake.unshift(head);
+
+			if (head.x === food.x && head.y === food.y) {
+				score += 1;
+				updateScore();
+				placeFood();
+			} else {
+				snake.pop();
+			}
+
+			draw();
+		}
+
+		function endGame() {
+			running = false;
+			clearInterval(gameTimer);
+			draw();
+		}
+
+		function restartGame() {
+			running = false;
+			clearInterval(gameTimer);
+			resetGameState();
+		}
+
+		window.addEventListener('keydown', event => {
+			const mapping = {
+				arrowup: { x: 0, y: -1 },
+				w: { x: 0, y: -1 },
+				arrowdown: { x: 0, y: 1 },
+				s: { x: 0, y: 1 },
+				arrowleft: { x: -1, y: 0 },
+				a: { x: -1, y: 0 },
+				arrowright: { x: 1, y: 0 },
+				d: { x: 1, y: 0 }
+			};
+
+			const nextDir = mapping[event.key.toLowerCase()];
+			if (!nextDir || !running) return;
+			if (snake.length > 1 && nextDir.x === -dir.x && nextDir.y === -dir.y) return;
+			dir = nextDir;
+			event.preventDefault();
+		});
+
+		difficultySelect.addEventListener('change', applyDifficulty);
+		restartBtn.addEventListener('click', restartGame);
+
+		applyDifficulty();
+		resetGameState();
+	</script>
+</body>
+</html>
