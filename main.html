@@ -31,11 +31,16 @@
     .pill small { display: block; color: var(--muted); font-size: 0.84rem; }
     .pill strong { display: block; margin-top: 4px; font-size: 1.35rem; }
     .layout { display: grid; grid-template-columns: 1.45fr 1fr; gap: 24px; margin-top: 30px; }
-    .game-box { position: relative; padding: 24px; border-radius: 32px; background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.07); }
+    .game-box { position: relative; padding: 24px; border-radius: 32px; background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.07); touch-action: none; }
     .game-canvas { width: 100%; max-width: 520px; aspect-ratio: 1 / 1; border-radius: 28px; background: #03060e; display: block; box-shadow: inset 0 0 40px rgba(77,224,255,0.08), 0 24px 48px rgba(0,0,0,0.25); }
-    .touch-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
-    .touch-button { appearance: none; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); border-radius: 18px; min-height: 70px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.18s ease, background 0.18s ease; user-select: none; }
-    .touch-button:active { transform: translateY(1px); background: rgba(255,255,255,0.14); }
+    .touch-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-areas: ". up ." "left center right" ". down ."; gap: 12px; margin-top: 20px; align-items: center; }
+    .touch-button { appearance: none; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); border-radius: 18px; min-height: 68px; font-size: 1.2rem; font-weight: 700; cursor: pointer; transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease; user-select: none; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); touch-action: manipulation; }
+    .touch-button.up { grid-area: up; }
+    .touch-button.left { grid-area: left; }
+    .touch-button.right { grid-area: right; }
+    .touch-button.down { grid-area: down; }
+    .touch-button.center { grid-area: center; pointer-events: none; min-height: 70px; opacity: 0.9; background: rgba(77, 224, 255, 0.12); color: var(--accent); border-style: dashed; }
+    .touch-button:active { transform: scale(0.97); background: rgba(255,255,255,0.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14); }
     .touch-hint { margin-top: 12px; color: var(--muted); font-size: 0.95rem; text-align: center; }
     .sidebar { display: flex; flex-direction: column; gap: 20px; }
     .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
@@ -92,12 +97,13 @@
       <div class="game-box">
         <canvas id="game" width="420" height="420" class="game-canvas"></canvas>
         <div class="touch-controls" aria-label="Touch game controls">
-          <button class="touch-button" data-dir="up">↑</button>
-          <button class="touch-button" data-dir="left">←</button>
-          <button class="touch-button" data-dir="right">→</button>
-          <button class="touch-button" data-dir="down">↓</button>
+          <button class="touch-button up" data-dir="up" aria-label="Move up">↑</button>
+          <button class="touch-button left" data-dir="left" aria-label="Move left">←</button>
+          <button class="touch-button center" aria-label="Touch pad">+</button>
+          <button class="touch-button right" data-dir="right" aria-label="Move right">→</button>
+          <button class="touch-button down" data-dir="down" aria-label="Move down">↓</button>
         </div>
-        <div class="touch-hint">Tap arrows on mobile or use arrow keys / WASD on desktop.</div>
+        <div class="touch-hint">Swipe on the game area or tap the + pad to steer. Use arrow keys / WASD on desktop.</div>
         <div class="touch-hint offline" id="offlineStatus"></div>
       </div>
 
@@ -171,6 +177,7 @@
     const difficultySelect = document.getElementById('difficulty');
     const modeLabel = document.getElementById('modeLabel');
     const touchButtons = document.querySelectorAll('.touch-button');
+    const gameBox = document.querySelector('.game-box');
     const overlay = document.getElementById('startOverlay');
     const startButton = document.getElementById('startButton');
     const pauseButton = document.getElementById('pauseButton');
@@ -210,6 +217,9 @@
     let sessionStart = 0;
     let soundMuted = localStorage.getItem('neonSnakeMuted') === 'true';
     let paused = false;
+    let swipeStartX = 0;
+    let swipeStartY = 0;
+    let swipeActive = false;
 
     scoreEl.textContent = score;
     bestScoreEl.textContent = bestScore;
@@ -420,7 +430,36 @@
       if (directionKey) { setDirection(directionKey); event.preventDefault(); }
     });
 
-    touchButtons.forEach(button => button.addEventListener('click', () => setDirection(button.dataset.dir)));
+    touchButtons.forEach(button => {
+      if (!button.dataset.dir) return;
+      button.addEventListener('pointerdown', event => {
+        event.preventDefault();
+        setDirection(button.dataset.dir);
+      });
+    });
+
+    gameBox.addEventListener('touchstart', event => {
+      if (event.target.closest('.touch-button')) return;
+      const touch = event.touches[0];
+      swipeStartX = touch.clientX;
+      swipeStartY = touch.clientY;
+      swipeActive = true;
+    }, { passive: true });
+
+    gameBox.addEventListener('touchend', event => {
+      if (!swipeActive) return;
+      const touch = event.changedTouches[0];
+      const dx = touch.clientX - swipeStartX;
+      const dy = touch.clientY - swipeStartY;
+      const threshold = 28;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > threshold) {
+        setDirection(dx > 0 ? 'right' : 'left');
+      } else if (Math.abs(dy) > threshold) {
+        setDirection(dy > 0 ? 'down' : 'up');
+      }
+      swipeActive = false;
+    }, { passive: true });
+
     difficultySelect.addEventListener('change', setDifficulty);
     restartBtn.addEventListener('click', () => { gameOver = false; running = true; paused = false; overlay.style.display = 'none'; resetGame(); });
     startButton.addEventListener('click', startGame);
