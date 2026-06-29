@@ -142,6 +142,7 @@
             </select>
           </div>
           <button id="restart">Restart Game</button>
+          <button id="pauseButton">Pause Game</button>
           <button id="muteButton">Mute Sound</button>
           <div class="guide">
             <strong>Gameplay tips:</strong> Use quick turns to avoid your own tail. On Hard, walls end the game instantly.
@@ -172,6 +173,7 @@
     const touchButtons = document.querySelectorAll('.touch-button');
     const overlay = document.getElementById('startOverlay');
     const startButton = document.getElementById('startButton');
+    const pauseButton = document.getElementById('pauseButton');
     const muteButton = document.getElementById('muteButton');
     const offlineStatus = document.getElementById('offlineStatus');
     const gamesPlayedEl = document.getElementById('gamesPlayed');
@@ -207,6 +209,7 @@
     let gameOver = false;
     let sessionStart = 0;
     let soundMuted = localStorage.getItem('neonSnakeMuted') === 'true';
+    let paused = false;
 
     scoreEl.textContent = score;
     bestScoreEl.textContent = bestScore;
@@ -230,6 +233,10 @@
 
     function updateMuteButton() {
       muteButton.textContent = soundMuted ? 'Unmute Sound' : 'Mute Sound';
+    }
+
+    function updatePauseButton() {
+      pauseButton.textContent = paused ? 'Resume Game' : 'Pause Game';
     }
 
     function formatTime(seconds) {
@@ -262,16 +269,19 @@
       if (gameStarted && running) return;
       gameStarted = true;
       gameOver = false;
+      paused = false;
       overlay.style.display = 'none';
       resetGameState();
       requestAnimationFrame(loop);
       playTone(440, 0.08, 0.12);
+      updatePauseButton();
     }
 
     function resetGameState() {
       snake = [{ x: Math.floor(cols / 2), y: Math.floor(rows / 2) }];
       direction = { x: 1, y: 0 };
       nextDirection = { x: 1, y: 0 };
+      paused = false;
       score = 0;
       scoreEl.textContent = score;
       running = true;
@@ -352,6 +362,7 @@
     function finishGame() {
       running = false;
       gameOver = true;
+      paused = false;
       const sessionSeconds = Math.round((performance.now() - sessionStart) / 1000);
       lastSession = sessionSeconds;
       gamesPlayed += 1;
@@ -368,7 +379,10 @@
     }
 
     function loop(timestamp) {
-      if (!gameStarted) return;
+      if (!gameStarted || paused) {
+        if (gameStarted) draw();
+        return requestAnimationFrame(loop);
+      }
       const delta = timestamp - lastTime;
       lastTime = timestamp;
       accumulator += delta;
@@ -408,12 +422,19 @@
 
     touchButtons.forEach(button => button.addEventListener('click', () => setDirection(button.dataset.dir)));
     difficultySelect.addEventListener('change', setDifficulty);
-    restartBtn.addEventListener('click', () => { gameOver = false; running = true; overlay.style.display = 'none'; resetGame(); });
+    restartBtn.addEventListener('click', () => { gameOver = false; running = true; paused = false; overlay.style.display = 'none'; resetGame(); });
     startButton.addEventListener('click', startGame);
+    pauseButton.addEventListener('click', () => {
+      if (!gameStarted) return;
+      paused = !paused;
+      updatePauseButton();
+      draw();
+    });
 
-    function resetGame() { resetGameState(); }
+    function resetGame() { resetGameState(); updatePauseButton(); }
 
     updateMuteButton();
+    updatePauseButton();
 
     function playTone(freq, duration = 0.12, gain = 0.08, type = 'sine') {
       if (soundMuted || !window.AudioContext) return;
