@@ -61,6 +61,9 @@
     .menu p { margin: 0 0 22px; color: var(--muted); line-height: 1.7; }
     .menu button { width: auto; min-width: 180px; padding: 16px 22px; }
     .note { margin-top: 12px; color: #9bb1cf; font-size: 0.92rem; }
+    .quote-card { padding: 18px 22px; border-radius: 24px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); margin-top: 20px; color: #dce4fb; }
+    .quote-card p { margin: 0; font-size: 1rem; line-height: 1.7; }
+    .quote-card cite { display: block; margin-top: 12px; color: var(--muted); font-size: 0.92rem; font-style: normal; }
     .offline { margin-top: 8px; color: #7ed7a4; }
     footer { margin-top: 26px; font-size: 0.95rem; color: rgba(255,255,255,0.58); text-align: center; }
     @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
@@ -79,6 +82,10 @@
         <small>Mode</small>
         <strong id="modeLabel">Normal</strong>
       </div>
+    </div>
+    <div class="quote-card">
+      <p>“The only limit to our realization of tomorrow is our doubts of today.”</p>
+      <cite>— Franklin D. Roosevelt</cite>
     </div>
 
     <div class="layout">
@@ -135,6 +142,7 @@
             </select>
           </div>
           <button id="restart">Restart Game</button>
+          <button id="muteButton">Mute Sound</button>
           <div class="guide">
             <strong>Gameplay tips:</strong> Use quick turns to avoid your own tail. On Hard, walls end the game instantly.
           </div>
@@ -164,6 +172,7 @@
     const touchButtons = document.querySelectorAll('.touch-button');
     const overlay = document.getElementById('startOverlay');
     const startButton = document.getElementById('startButton');
+    const muteButton = document.getElementById('muteButton');
     const offlineStatus = document.getElementById('offlineStatus');
     const gamesPlayedEl = document.getElementById('gamesPlayed');
     const lastSessionEl = document.getElementById('lastSession');
@@ -197,6 +206,7 @@
     let gameStarted = false;
     let gameOver = false;
     let sessionStart = 0;
+    let soundMuted = localStorage.getItem('neonSnakeMuted') === 'true';
 
     scoreEl.textContent = score;
     bestScoreEl.textContent = bestScore;
@@ -208,9 +218,18 @@
 
     window.addEventListener('online', updateOfflineStatus);
     window.addEventListener('offline', updateOfflineStatus);
+    muteButton.addEventListener('click', () => {
+      soundMuted = !soundMuted;
+      localStorage.setItem('neonSnakeMuted', soundMuted);
+      updateMuteButton();
+    });
 
     function updateOfflineStatus() {
       offlineStatus.textContent = navigator.onLine ? 'Online play available' : 'Offline mode enabled';
+    }
+
+    function updateMuteButton() {
+      muteButton.textContent = soundMuted ? 'Unmute Sound' : 'Mute Sound';
     }
 
     function formatTime(seconds) {
@@ -394,8 +413,10 @@
 
     function resetGame() { resetGameState(); }
 
+    updateMuteButton();
+
     function playTone(freq, duration = 0.12, gain = 0.08, type = 'sine') {
-      if (!window.AudioContext) return;
+      if (soundMuted || !window.AudioContext) return;
       const audio = new AudioContext();
       const oscillator = audio.createOscillator();
       const gainNode = audio.createGain();
