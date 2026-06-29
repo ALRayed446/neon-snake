@@ -8,10 +8,9 @@
     :root {
       color-scheme: dark;
       --bg: #050812;
-      --panel: rgba(18, 26, 49, 0.92);
-      --panel-strong: rgba(7, 13, 29, 0.98);
+      --panel: rgba(18, 26, 49, 0.94);
       --text: #eef4ff;
-      --muted: #98a5c7;
+      --muted: #9bb1cf;
       --accent: #4de0ff;
       --accent2: #ff75c4;
       --success: #8af9a8;
@@ -20,36 +19,33 @@
       --radius: 26px;
       --shadow: 0 36px 120px rgba(0, 0, 0, 0.28);
     }
-
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: radial-gradient(circle at top left, rgba(77, 224, 255, 0.16), transparent 18%), radial-gradient(circle at bottom right, rgba(255, 117, 196, 0.12), transparent 24%), linear-gradient(180deg, #080c17 0%, #050812 100%); color: var(--text); }
     body { display: flex; align-items: center; justify-content: center; padding: 32px; }
     body::after { content: ''; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(circle at 20% 10%, rgba(77,224,255,0.08), transparent 12%), radial-gradient(circle at 80% 90%, rgba(255,117,196,0.06), transparent 14%); }
-
-    .panel { width: min(1040px, 100%); padding: 32px; border-radius: var(--radius); background: var(--panel); border: 1px solid var(--border); box-shadow: var(--shadow); backdrop-filter: blur(12px); }
+    .panel { width: min(1040px, 100%); padding: 32px; border-radius: var(--radius); background: var(--panel); border: 1px solid var(--border); box-shadow: var(--shadow); backdrop-filter: blur(12px); position: relative; overflow: hidden; }
     .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 22px; }
-    .topbar h1 { margin: 0; font-size: clamp(2rem, 3vw, 3.4rem); letter-spacing: -0.05em; }
-    .topbar p { margin: 18px 0 0; max-width: 560px; color: var(--muted); line-height: 1.8; }
-
-    .difficulty-pill { padding: 14px 18px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); text-align: right; }
-    .difficulty-pill small { display: block; color: var(--muted); font-size: 0.84rem; }
-    .difficulty-pill strong { display: block; margin-top: 4px; font-size: 1.35rem; }
-
+    .topbar h1 { margin: 0; font-size: clamp(2rem, 3vw, 3.5rem); letter-spacing: -0.05em; }
+    .topbar p { margin: 18px 0 0; max-width: 560px; color: var(--muted); line-height: 1.75; }
+    .pill { padding: 14px 18px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); text-align: right; }
+    .pill small { display: block; color: var(--muted); font-size: 0.84rem; }
+    .pill strong { display: block; margin-top: 4px; font-size: 1.35rem; }
     .layout { display: grid; grid-template-columns: 1.45fr 1fr; gap: 24px; margin-top: 30px; }
     .game-box { position: relative; padding: 24px; border-radius: 32px; background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.07); }
     .game-canvas { width: 100%; max-width: 520px; aspect-ratio: 1 / 1; border-radius: 28px; background: #03060e; display: block; box-shadow: inset 0 0 40px rgba(77,224,255,0.08), 0 24px 48px rgba(0,0,0,0.25); }
-
     .touch-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
     .touch-button { appearance: none; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); border-radius: 18px; min-height: 70px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.18s ease, background 0.18s ease; user-select: none; }
     .touch-button:active { transform: translateY(1px); background: rgba(255,255,255,0.14); }
     .touch-hint { margin-top: 12px; color: var(--muted); font-size: 0.95rem; text-align: center; }
-
     .sidebar { display: flex; flex-direction: column; gap: 20px; }
     .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
     .stat-card { padding: 18px 20px; border-radius: 24px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
     .stat-card small { display: block; color: var(--muted); font-size: 0.88rem; }
     .stat-card strong { display: block; margin-top: 10px; font-size: 2rem; }
-
+    .history { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .history-card { padding: 18px 20px; border-radius: 24px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
+    .history-card small { display: block; color: var(--muted); font-size: 0.88rem; }
+    .history-card strong { display: block; margin-top: 10px; font-size: 1.75rem; }
     .controls { display: grid; gap: 18px; }
     .field { display: grid; gap: 10px; }
     label { color: var(--text); font-size: 0.96rem; }
@@ -57,15 +53,19 @@
     select { background-image: linear-gradient(to right, transparent, transparent 8px, rgba(255,255,255,0.12) 8px); background-position: right 14px center; background-repeat: no-repeat; }
     button { font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #08101a; box-shadow: 0 18px 30px rgba(77,224,255,0.16); }
     button:hover { filter: brightness(1.03); }
-
     .guide { padding: 18px 20px; border-radius: 24px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: var(--muted); line-height: 1.75; }
     .guide strong { color: var(--text); }
-
+    .overlay { position: absolute; inset: 0; background: rgba(4, 8, 18, 0.9); display: flex; align-items: center; justify-content: center; z-index: 2; padding: 24px; }
+    .menu { width: min(460px, 100%); text-align: center; padding: 28px 26px; border-radius: 28px; background: rgba(10, 18, 34, 0.98); border: 1px solid rgba(255,255,255,0.08); }
+    .menu h2 { margin: 0 0 14px; font-size: clamp(1.9rem, 3vw, 2.4rem); }
+    .menu p { margin: 0 0 22px; color: var(--muted); line-height: 1.7; }
+    .menu button { width: auto; min-width: 180px; padding: 16px 22px; }
+    .note { margin-top: 12px; color: #9bb1cf; font-size: 0.92rem; }
+    .offline { margin-top: 8px; color: #7ed7a4; }
     footer { margin-top: 26px; font-size: 0.95rem; color: rgba(255,255,255,0.58); text-align: center; }
-
     @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
-    @media (max-width: 700px) { body { padding: 18px; } .topbar { flex-direction: column; } .difficulty-pill { text-align: left; } .touch-controls { grid-template-columns: 1fr 1fr; } .touch-button { min-height: 62px; } }
-    @media (max-width: 520px) { .panel { padding: 22px; } .touch-controls { grid-template-columns: 1fr; } }
+    @media (max-width: 700px) { body { padding: 18px; } .topbar { flex-direction: column; } .pill { text-align: left; } .touch-controls { grid-template-columns: 1fr 1fr; } .touch-button { min-height: 62px; } }
+    @media (max-width: 520px) { .panel { padding: 22px; } .touch-controls { grid-template-columns: 1fr; } .history { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -73,9 +73,9 @@
     <div class="topbar">
       <div>
         <h1>Neon Snake</h1>
-        <p>Experience a responsive, polished snake game with smooth animation, mobile touch controls, and difficulty modes built for desktop and phone.</p>
+        <p>Polished snake gameplay with mobile touch controls, offline support, and session history memory so your best runs are remembered.</p>
       </div>
-      <div class="difficulty-pill">
+      <div class="pill">
         <small>Mode</small>
         <strong id="modeLabel">Normal</strong>
       </div>
@@ -85,12 +85,13 @@
       <div class="game-box">
         <canvas id="game" width="420" height="420" class="game-canvas"></canvas>
         <div class="touch-controls" aria-label="Touch game controls">
-          <button class="touch-button" data-dir="up">Up</button>
-          <button class="touch-button" data-dir="left">Left</button>
-          <button class="touch-button" data-dir="right">Right</button>
-          <button class="touch-button" data-dir="down">Down</button>
+          <button class="touch-button" data-dir="up">↑</button>
+          <button class="touch-button" data-dir="left">←</button>
+          <button class="touch-button" data-dir="right">→</button>
+          <button class="touch-button" data-dir="down">↓</button>
         </div>
-        <div class="touch-hint">Tap these buttons on touch devices, or use arrow keys / WASD on desktop.</div>
+        <div class="touch-hint">Tap arrows on mobile or use arrow keys / WASD on desktop.</div>
+        <div class="touch-hint offline" id="offlineStatus"></div>
       </div>
 
       <aside class="sidebar">
@@ -105,6 +106,25 @@
           </div>
         </div>
 
+        <div class="history">
+          <div class="history-card">
+            <small>Games played</small>
+            <strong id="gamesPlayed">0</strong>
+          </div>
+          <div class="history-card">
+            <small>Last session</small>
+            <strong id="lastSession">0s</strong>
+          </div>
+          <div class="history-card">
+            <small>Total play time</small>
+            <strong id="totalTime">0s</strong>
+          </div>
+          <div class="history-card">
+            <small>Average score</small>
+            <strong id="avgScore">0</strong>
+          </div>
+        </div>
+
         <div class="controls">
           <div class="field">
             <label for="difficulty">Choose difficulty</label>
@@ -116,12 +136,21 @@
           </div>
           <button id="restart">Restart Game</button>
           <div class="guide">
-            <strong>Play smarter:</strong> Easy lets you wrap around walls, Normal plays steady, and Hard unlocks wall collision with faster movement.
+            <strong>Gameplay tips:</strong> Use quick turns to avoid your own tail. On Hard, walls end the game instantly.
           </div>
         </div>
       </aside>
     </div>
-    <footer>Designed for speed, polish, and mobile-friendly controls.</footer>
+
+    <footer>Offline play works after first load on supported browsers. The game is installed directly from this page.</footer>
+    <div class="overlay" id="startOverlay">
+      <div class="menu">
+        <h2>Ready to play?</h2>
+        <p>Press Start to launch Neon Snake. Your best score, total play time, and history are saved automatically.</p>
+        <button id="startButton">Start Game</button>
+        <div class="note">Offline support is enabled once this page loads. Touch or keyboard controls both work.</div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -133,11 +162,18 @@
     const difficultySelect = document.getElementById('difficulty');
     const modeLabel = document.getElementById('modeLabel');
     const touchButtons = document.querySelectorAll('.touch-button');
+    const overlay = document.getElementById('startOverlay');
+    const startButton = document.getElementById('startButton');
+    const offlineStatus = document.getElementById('offlineStatus');
+    const gamesPlayedEl = document.getElementById('gamesPlayed');
+    const lastSessionEl = document.getElementById('lastSession');
+    const totalTimeEl = document.getElementById('totalTime');
+    const avgScoreEl = document.getElementById('avgScore');
 
     const grid = 20;
     const cols = canvas.width / grid;
     const rows = canvas.height / grid;
-    const difficulty = {
+    const difficultyMap = {
       easy: { interval: 150, wall: false, label: 'Easy' },
       normal: { interval: 110, wall: false, label: 'Normal' },
       hard: { interval: 75, wall: true, label: 'Hard' }
@@ -149,18 +185,42 @@
     let food = null;
     let score = 0;
     let bestScore = Number(localStorage.getItem('neonSnakeBestScore') || 0);
+    let gamesPlayed = Number(localStorage.getItem('neonSnakeGames') || 0);
+    let totalTime = Number(localStorage.getItem('neonSnakeTotalTime') || 0);
+    let lastSession = Number(localStorage.getItem('neonSnakeLastSession') || 0);
+    let totalScore = Number(localStorage.getItem('neonSnakeTotalScore') || 0);
     let running = false;
     let wallMode = false;
-    let targetInterval = difficulty.normal.interval;
+    let targetInterval = difficultyMap.normal.interval;
     let lastTime = 0;
     let accumulator = 0;
     let gameStarted = false;
     let gameOver = false;
+    let sessionStart = 0;
 
+    scoreEl.textContent = score;
     bestScoreEl.textContent = bestScore;
+    gamesPlayedEl.textContent = gamesPlayed;
+    lastSessionEl.textContent = formatTime(lastSession);
+    totalTimeEl.textContent = formatTime(totalTime);
+    avgScoreEl.textContent = gamesPlayed ? Math.round(totalScore / gamesPlayed) : 0;
+    updateOfflineStatus();
+
+    window.addEventListener('online', updateOfflineStatus);
+    window.addEventListener('offline', updateOfflineStatus);
+
+    function updateOfflineStatus() {
+      offlineStatus.textContent = navigator.onLine ? 'Online play available' : 'Offline mode enabled';
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return mins ? `${mins}m ${secs}s` : `${secs}s`;
+    }
 
     function setDifficulty() {
-      const config = difficulty[difficultySelect.value] || difficulty.normal;
+      const config = difficultyMap[difficultySelect.value] || difficultyMap.normal;
       targetInterval = config.interval;
       wallMode = config.wall;
       modeLabel.textContent = config.label;
@@ -168,10 +228,7 @@
     }
 
     function randomPosition() {
-      return {
-        x: Math.floor(Math.random() * cols),
-        y: Math.floor(Math.random() * rows)
-      };
+      return { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
     }
 
     function placeFood() {
@@ -183,23 +240,26 @@
     }
 
     function startGame() {
-      if (gameStarted) return;
+      if (gameStarted && running) return;
       gameStarted = true;
       gameOver = false;
+      overlay.style.display = 'none';
       resetGameState();
       requestAnimationFrame(loop);
+      playTone(440, 0.08, 0.12);
     }
 
     function resetGameState() {
       snake = [{ x: Math.floor(cols / 2), y: Math.floor(rows / 2) }];
       direction = { x: 1, y: 0 };
       nextDirection = { x: 1, y: 0 };
-      placeFood();
       score = 0;
       scoreEl.textContent = score;
       running = true;
       accumulator = 0;
       lastTime = performance.now();
+      sessionStart = performance.now();
+      placeFood();
       draw();
     }
 
@@ -207,20 +267,13 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = '#050812';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       ctx.strokeStyle = 'rgba(255,255,255,0.04)';
       ctx.lineWidth = 1;
       for (let x = 0; x <= canvas.width; x += grid) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
       }
       for (let y = 0; y <= canvas.height; y += grid) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
       }
     }
 
@@ -228,15 +281,13 @@
       drawBoard();
       ctx.fillStyle = '#ff72d2';
       ctx.fillRect(food.x * grid + 5, food.y * grid + 5, grid - 10, grid - 10);
-
       snake.forEach((segment, index) => {
-        ctx.fillStyle = index === 0 ? '#fff' : '#7df2a6';
+        ctx.fillStyle = index === 0 ? '#ffffff' : '#7df2a6';
         ctx.shadowColor = index === 0 ? 'rgba(255,255,255,0.75)' : 'rgba(125,242,166,0.25)';
         ctx.shadowBlur = index === 0 ? 14 : 8;
         ctx.fillRect(segment.x * grid + 4, segment.y * grid + 4, grid - 8, grid - 8);
       });
       ctx.shadowBlur = 0;
-
       if (!running) drawOverlay();
     }
 
@@ -249,31 +300,25 @@
       ctx.fillText(gameOver ? 'Game Over' : 'Paused', canvas.width / 2, canvas.height / 2 - 18);
       ctx.font = '16px Inter, system-ui, Arial';
       ctx.fillText(`Score ${score} • Best ${bestScore}`, canvas.width / 2, canvas.height / 2 + 14);
-      ctx.fillText('Press restart to play again', canvas.width / 2, canvas.height / 2 + 44);
+      ctx.fillText('Tap Start to play again', canvas.width / 2, canvas.height / 2 + 44);
     }
 
     function update() {
       if (!running) return;
       direction = nextDirection;
       const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
-
       if (wallMode) {
-        if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows) {
-          return endGame();
-        }
+        if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows) { return finishGame(); }
       } else {
         head.x = (head.x + cols) % cols;
         head.y = (head.y + rows) % rows;
       }
-
-      if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
-        return endGame();
-      }
-
+      if (snake.some(segment => segment.x === head.x && segment.y === head.y)) { return finishGame(); }
       snake.unshift(head);
       if (head.x === food.x && head.y === food.y) {
         score += 1;
         scoreEl.textContent = score;
+        playTone(720, 0.1, 0.08);
         if (score > bestScore) {
           bestScore = score;
           bestScoreEl.textContent = bestScore;
@@ -285,10 +330,22 @@
       }
     }
 
-    function endGame() {
+    function finishGame() {
       running = false;
       gameOver = true;
+      const sessionSeconds = Math.round((performance.now() - sessionStart) / 1000);
+      lastSession = sessionSeconds;
+      gamesPlayed += 1;
+      totalTime += sessionSeconds;
+      totalScore += score;
+      localStorage.setItem('neonSnakeGames', gamesPlayed);
+      localStorage.setItem('neonSnakeTotalTime', totalTime);
+      localStorage.setItem('neonSnakeLastSession', lastSession);
+      localStorage.setItem('neonSnakeTotalScore', totalScore);
+      updateHistory();
+      playTone(220, 0.18, 0.12, 'sawtooth');
       draw();
+      overlay.style.display = 'flex';
     }
 
     function loop(timestamp) {
@@ -296,7 +353,6 @@
       const delta = timestamp - lastTime;
       lastTime = timestamp;
       accumulator += delta;
-
       while (accumulator >= targetInterval) {
         if (running) update();
         accumulator -= targetInterval;
@@ -306,16 +362,18 @@
     }
 
     function setDirection(newDir) {
-      const mapping = {
-        up: { x: 0, y: -1 },
-        down: { x: 0, y: 1 },
-        left: { x: -1, y: 0 },
-        right: { x: 1, y: 0 }
-      };
+      const mapping = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };
       const chosen = typeof newDir === 'string' ? mapping[newDir] : newDir;
       if (!chosen || !running) return;
       if (snake.length > 1 && chosen.x === -direction.x && chosen.y === -direction.y) return;
       nextDirection = chosen;
+    }
+
+    function updateHistory() {
+      gamesPlayedEl.textContent = gamesPlayed;
+      lastSessionEl.textContent = formatTime(lastSession);
+      totalTimeEl.textContent = formatTime(totalTime);
+      avgScoreEl.textContent = gamesPlayed ? Math.round(totalScore / gamesPlayed) : 0;
     }
 
     window.addEventListener('keydown', event => {
@@ -325,28 +383,41 @@
         arrowleft: 'left', a: 'left', h: 'left',
         arrowright: 'right', d: 'right', l: 'right'
       };
-      const key = event.key.toLowerCase();
-      const directionKey = map[key];
-      if (directionKey) {
-        setDirection(directionKey);
-        event.preventDefault();
-      }
+      const directionKey = map[event.key.toLowerCase()];
+      if (directionKey) { setDirection(directionKey); event.preventDefault(); }
     });
 
     touchButtons.forEach(button => button.addEventListener('click', () => setDirection(button.dataset.dir)));
     difficultySelect.addEventListener('change', setDifficulty);
-    restartBtn.addEventListener('click', () => {
-      gameOver = false;
-      running = true;
-      resetGame();
-    });
+    restartBtn.addEventListener('click', () => { gameOver = false; running = true; overlay.style.display = 'none'; resetGame(); });
+    startButton.addEventListener('click', startGame);
 
-    function resetGame() {
-      resetGameState();
+    function resetGame() { resetGameState(); }
+
+    function playTone(freq, duration = 0.12, gain = 0.08, type = 'sine') {
+      if (!window.AudioContext) return;
+      const audio = new AudioContext();
+      const oscillator = audio.createOscillator();
+      const gainNode = audio.createGain();
+      oscillator.type = type;
+      oscillator.frequency.value = freq;
+      gainNode.gain.setValueAtTime(gain, audio.currentTime);
+      oscillator.connect(gainNode);
+      gainNode.connect(audio.destination);
+      oscillator.start();
+      oscillator.stop(audio.currentTime + duration);
+      oscillator.onended = () => audio.close();
+    }
+
+    function registerServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => null);
+      }
     }
 
     setDifficulty();
-    startGame();
+    updateHistory();
+    registerServiceWorker();
   </script>
 </body>
 </html>
